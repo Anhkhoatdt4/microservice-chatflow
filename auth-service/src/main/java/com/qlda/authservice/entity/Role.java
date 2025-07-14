@@ -18,6 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Table
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class Role {
     @Id
     String name;

@@ -1,10 +1,7 @@
 package com.qlda.authservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -16,6 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class User {
     @Id
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -27,12 +25,15 @@ public class User {
     String username;
     String password;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
+    String email;
+
+    @Column(nullable = false)
     boolean enabled;
 
     String firstName;
     String lastName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     Set<Role>roles;
 }

@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,7 @@ public class AuthenticationService {
     @Value("${spring.jwt.refreshable-duration}")
     private int REFRESH_EXPIRATION_TIME;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     public String generateToken(String username){
@@ -47,9 +49,8 @@ public class AuthenticationService {
                 .issuedAt(new Date())
                 .expiration(generateExpirationDate())
                 .signWith(getSigningKey())
-                .claim("scope", buildScope(userRepository.findByUsername(username))) // Thêm claim tùy chỉnh nếu cần
+                .claim("scope", buildScope(userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found")))) // Thêm claim tùy chỉnh nếu cần
                 .compact(); // bien token thanh String jwt ( header + payload + signature)
-
 
     }
 
@@ -138,6 +139,16 @@ public class AuthenticationService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean isTokenExpired(String token) {
+        Date expiration = getExpirationDate(token);
+        return expiration.before(new Date());
+    }
+
+    public boolean isTokenValid(String authToken, UserDetails userDetails){
+        String username = getUsernameFromToken(authToken);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(authToken));
     }
 
     public String generateRefreshToken(String username){
