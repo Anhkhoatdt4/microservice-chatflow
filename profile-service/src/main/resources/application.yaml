@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: profile-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/profile
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  jwt:
+    signerKey: HCzyRdmNHSAuVXVnt26x01KW15acZCCMUaMhe5XpHYiXti6MuaY6M7uohFxHazCe
+    expiration: 3600
+    refreshable-duration: 36000
+    issuer: profile-service
+
+server:
+  port: 8081
+  servlet:
+    context-path: /profile
+
+app:
+  services:
+    file: http://localhost:8084
