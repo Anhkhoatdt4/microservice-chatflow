@@ -6,6 +6,7 @@ import com.qlda.authservice.dto.request.LogoutRequest;
 import com.qlda.authservice.dto.request.RefreshRequest;
 import com.qlda.authservice.dto.response.ApiResponse;
 import com.qlda.authservice.dto.response.AuthenticationResponse;
+import com.qlda.authservice.dto.response.IntrospectResponse;
 import com.qlda.authservice.dto.response.TokenResponse;
 import com.qlda.authservice.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -91,5 +92,39 @@ public class AuthenticationController {
                     .result("The provided token is invalid or has expired.")
                     .build();
         }
+    }
+
+    @GetMapping("/introspect")
+    public ApiResponse<IntrospectResponse> introspect(@RequestHeader("Authorization") String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ApiResponse.<IntrospectResponse>builder()
+                    .code(4000)
+                    .message("Missing or malformed Authorization header")
+                    .build();
+        }
+
+        token = token.replace("Bearer ", "");
+        boolean isValid = authenticationService.validateToken(token);
+
+        if (!isValid) {
+            return ApiResponse.<IntrospectResponse>builder()
+                    .message("Token is invalid or expired")
+                    .result(IntrospectResponse.builder()
+                            .valid(false)
+                            .build())
+                    .build();
+        }
+
+        String username = authenticationService.getUsernameFromToken(token);
+        long expiry = authenticationService.getExpirationTime(token);
+
+        return ApiResponse.<IntrospectResponse>builder()
+                .message("Token is valid")
+                .result(IntrospectResponse.builder()
+                        .valid(true)
+                        .username(username)
+                        .expiryTime(expiry)
+                        .build())
+                .build();
     }
 }

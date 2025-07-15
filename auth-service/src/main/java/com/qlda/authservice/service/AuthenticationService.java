@@ -86,6 +86,13 @@ public class AuthenticationService {
             return null;
         }
     }
+    public long getExpirationTime(String token) {
+        Date expirationDate = getExpirationDate(token);
+        if (expirationDate != null) {
+            return expirationDate.getTime() - System.currentTimeMillis();
+        }
+        return 0;
+    }
     private Key getSigningKey() {
         byte[] keyBytes = SIGNER_KEY.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
