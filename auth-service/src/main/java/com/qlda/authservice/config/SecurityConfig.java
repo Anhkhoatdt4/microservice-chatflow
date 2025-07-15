@@ -18,15 +18,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/public/**",
-            "/v3/api-docs/**",
-            "/swagger-ui.html",
             "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/favicon.ico",
+            "/**.png",
+
             "/users/registration",
-            "/auth/token",
-            "/auth/login",
-            "/auth/refresh-token",
-            "/auth/logout",
+            "/auth/**"
     };
 
     @Bean

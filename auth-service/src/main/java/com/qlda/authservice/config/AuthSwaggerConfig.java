@@ -19,7 +19,7 @@ public class AuthSwaggerConfig {
                         .description("API documentation for the Authentication Service of the Microservice project.")
 
         ).servers(List.of(
-                new Server().url("/api").description("Base URL for the Authentication Service API")
+                new Server().url("/identity").description("Base URL for the Authentication Service API")
         ));
 
     }
