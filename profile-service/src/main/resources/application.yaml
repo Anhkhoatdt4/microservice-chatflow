@@ -28,3 +28,7 @@ server:
 app:
   services:
     file: http://localhost:8084
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.qlda.profileservice.configuration.JwtAuthenticationFilter: DEBUG

@@ -13,7 +13,7 @@ public class SecurityWebConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/public/**", "/api/v1/identity/auth/**", "/api/v1/identity/users/registration").permitAll()
+                        .pathMatchers("/api/v1/public/**", "/api/v1/identity/auth/**", "/api/v1/identity/users/registration", "api/v1/profile/internal/users/create", "/api/v1/profile/internal/users/**").permitAll()
                         .anyExchange().authenticated() // Còn lại bắt buộc phải xác thực
                 )
                 .build();

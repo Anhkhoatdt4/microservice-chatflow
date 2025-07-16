@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,9 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.info("[JwtFilter] Incoming request URI: {}", request.getRequestURI());
+        log.info("[JwtFilter] Method: {}", request.getMethod());
+        log.info("[JwtFilter] Authorization Header: {}", request.getHeader("Authorization"));
         final String authorizationHeader = request.getHeader("Authorization");
         final String jwtToken;
         final String username;
+
 
         log.info("Starting JWT filter for request URI: {}", request.getRequestURI());
 
@@ -51,16 +56,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && (authentication == null || !authentication.isAuthenticated())) {
                 log.info("No authentication found in context, loading user details for username: {}", username);
 
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                log.info("UserDetails loaded: {}", userDetails.getUsername());
 
-                if (jwtTokenHandler.isTokenValid(jwtToken, userDetails)) {
-                    log.info("Token is valid, setting authentication in context");
+                if (username != null && (authentication == null || !authentication.isAuthenticated())) {
+                    log.info("No authentication found in context. Creating authentication manually.");
 
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
+                    // KHÔNG dùng UserDetailsService nữa → set auth trực tiếp
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    username, null, List.of() // nếu cần roles → lấy từ JWT claim
+                            );
 
-                    authenticationToken.setDetails(userDetails);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 } else {
                     log.warn("Token validation failed");

@@ -2,6 +2,7 @@ package com.qlda.authservice.controller;
 
 
 import com.qlda.authservice.dto.request.AuthenticationRequest;
+import com.qlda.authservice.dto.request.IntrospectRequest;
 import com.qlda.authservice.dto.request.LogoutRequest;
 import com.qlda.authservice.dto.request.RefreshRequest;
 import com.qlda.authservice.dto.response.ApiResponse;
@@ -94,8 +95,9 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/introspect")
-    public ApiResponse<IntrospectResponse> introspect(@RequestHeader("Authorization") String token) {
+    @PostMapping("/introspect")
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+        String token = request.getToken();
         if (token == null || !token.startsWith("Bearer ")) {
             return ApiResponse.<IntrospectResponse>builder()
                     .code(4000)
