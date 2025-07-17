@@ -44,11 +44,16 @@ public class AuthenticationService {
     private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     public String generateToken(String username){
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return Jwts.builder().issuer(ISSUER)
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(generateExpirationDate())
                 .signWith(getSigningKey())
+                .claim("username", user.getUsername())
+                .claim("userId", user.getId())
+                .claim("roles", user.getRoles().stream().map(role -> "ROLE_" + role.getName()).toList())
                 .claim("scope", buildScope(userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found")))) // Thêm claim tùy chỉnh nếu cần
                 .compact(); // bien token thanh String jwt ( header + payload + signature)
 

@@ -33,6 +33,19 @@ public class JwtTokenHandler {
         return Keys.hmacShaKeyFor(SIGNER_KEY.getBytes());
     }
 
+    public Claims getClaimsFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            log.error("Failed to parse JWT token", e);
+            return null;
+        }
+    }
+
     public String generateToken(String username, String scope) {
         return Jwts.builder()
                 .issuer(ISSUER)

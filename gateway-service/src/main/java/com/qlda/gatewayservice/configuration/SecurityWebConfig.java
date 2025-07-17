@@ -12,9 +12,7 @@ public class SecurityWebConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/public/**", "/api/v1/identity/auth/**", "/api/v1/identity/users/registration", "api/v1/profile/internal/users/create", "/api/v1/profile/internal/users/**").permitAll()
-                        .anyExchange().authenticated() // Còn lại bắt buộc phải xác thực
+                .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll()
                 )
                 .build();
     }

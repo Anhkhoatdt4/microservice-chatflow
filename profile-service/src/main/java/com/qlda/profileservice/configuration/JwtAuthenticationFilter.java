@@ -1,7 +1,9 @@
 package com.qlda.profileservice.configuration;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,13 +13,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
@@ -49,24 +55,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtToken = jwtTokenHandler.getToken(request);
             log.info("Extracted JWT token: {}", jwtToken);
 
-            username = jwtTokenHandler.getUsernameFromToken(jwtToken);
-            log.info("Extracted username from token: {}", username);
-
+            Claims claims = jwtTokenHandler.getClaimsFromToken(jwtToken);
+            log.info("Claims from token: {}", claims);
+            String userId = claims.get("userId", String.class);
+            username = claims.get("username", String.class);
+            List<String> roles = claims.get("roles", List.class);
+            log.info("Token info - userId: {}, username: {}, roles: {}", userId, username, roles);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (username != null && (authentication == null || !authentication.isAuthenticated())) {
-                log.info("No authentication found in context, loading user details for username: {}", username);
-
-
+                log.info("Creating authentication with roles from token");
                 if (username != null && (authentication == null || !authentication.isAuthenticated())) {
-                    log.info("No authentication found in context. Creating authentication manually.");
 
-                    // KHÔNG dùng UserDetailsService nữa → set auth trực tiếp
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    username, null, List.of() // nếu cần roles → lấy từ JWT claim
-                            );
+                    List<SimpleGrantedAuthority> authorities = roles.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList();
 
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    // Principial la một Map chứa thông tin người dùng
+                    Map<String, String> principial = Map.of("userId", userId, "username", username);
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(principial, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
                     log.warn("Token validation failed");
                 }
